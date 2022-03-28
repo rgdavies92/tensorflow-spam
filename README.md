@@ -52,9 +52,9 @@ Since this is a two column dataset, with `Category` and `Message` columns there 
 
 <br>
 <p align="center" width="100%">
-<kbd><img src="images/eda.png" width="600"  /></kbd>
+<kbd><img src="images/eda.png" width="900"  /></kbd>
 </p>
-<p align="center"><i><sub><b>Figure 2:</b> Left:Distribution plot of email wordcount by spam/ham label. Right: Pie chart illustration of dataset composition by spam/ham label.</sub></i></p>
+<p align="center"><i><sub><b>Figure 2:</b> Left: Distribution plot of message wordcount by spam/ham label. Right: Pie chart illustration of dataset composition by spam/ham label.</sub></i></p>
 <br>
 
 The histogram in figure 2 above shows that the median word count for a spam message is around 25 words. Shorter messages around 12 words long are predominantly ham whilst the longest messages are also commonly ham. The distibution plots are nice, but we can also look at some figures to describe the data. 
@@ -70,30 +70,36 @@ The values in figure 3 align with what is observed in figure 2. Finally let's ha
 
 <br>
 <p align="center" width="100%">
-<kbd><img src="images/clouds.png" width="600"  /></kbd>
+<kbd><img src="images/cloud.png" width="900"  /></kbd>
 </p>
 <p align="center"><i><sub><b>Figure 4:</b> Word clouds for all messages, spam messages and ham messages.</sub></i></p>
 <br>
 
-I used a the `TfidfVectorizer` class from Scikit-learn to generate these word clouds. This method won't be used later in the modelling, it was just a bit of fun to investigate what sort of words are being used in the spam/ham. There's a sense of urgency in the spam cloud, with more capital letters and more prizes to be won. 
+I used the `TfidfVectorizer` class from Scikit-learn to generate these word clouds. This method won't be used later in the modelling, it was just a bit of fun to investigate what sort of words are being used in the spam/ham. There's a sense of urgency in the spam cloud, with more capital letters and more prizes to be won. 
 
 That concludes this brief interrogation of a very simple dataset. Although I have used word count to describe differences between the spam and the ham, this attribute will not be included in the spam prediction model. Instead I will look to use some NLP methods to generate predictors. 
 
 # NLP and Modelling
 
-Now we get to the learning part for me. My previous NLP experience has been captured [here](https://github.com/rgdavies92/salaries-in-data) in a General Assembly project concerning job salaries in data related roles. The workflow consisted of stemming words, removing stop-words, count-vectorising over n-grams, selecting the top n predictors for input to logistic regression. This worked quite well at the time but I'm going to try a different approach here.
+Now we get to the learning part for me. My previous NLP experience has been captured [here](https://github.com/rgdavies92/salaries-in-data) in a General Assembly project concerning job salaries in data related roles. The workflow consisted of stemming words, removing stop-words, count-vectorising over n-grams and selecting the top n predictors for input to logistic regression. This worked quite well at the time but I'm going to try a different approach here.
 
 The workflow to be implemented in this spam project consists of the following:
 * Tokenize words in the messages to obtain integer vectors where each integer is the index of a token in a dictionary.
 * Pad the sequences to ensure all integer vectors have a constant length of 100 integers.
 * Use a pre-trained GloVe word embedding dataset in 100 dimensional space to map the tokenized words to the corresponding embedded vector. 
-* Enter the GloVe embedded messages as predictors into a Bi-directional Long Short-Term Memory Recurrent Neural Network (BiLSTM RNN 🤯) model
+* Enter the GloVe embedded messages as predictors into a Bi-directional Long Short-Term Memory Recurrent Neural Network (BiLSTM RNN 🤯) model.
 
 That's the high level overview of the process. I'll now try to break down each of those steps a little further, including my favourite references.
 
 ## Tokenize
 
+The Tokenizer class from TensorFlow has allowed each message to be vectorised by turning it into a sequence of integers where each integer is the index of a token in a dictionary. The length of each tokenized message was equal to the number of words in the message. The default behaviour of Tokenizer is to split on white space and filter all punctuation, tabs and line breaks besides the ' character `(!"#$%&()*+,-./:;<=>?@[\\]^_{|}~\t\n)`, so I didn't have to manually standardise punctuation. Tokenizer also converts all words to lower-case as default, saving me a step in preprocessing. 
+
 ## Pad
+
+Messages vary in length and so the tokenized outputs also very in length. This must be standardised before word embedding and can easily be done using the pad_sequences module again from TensorFlow. I have opted to cut all messages to 50 words/tokens in length based on the word count histogram in figure 2 above. Where messages are longer than 50 words, the first 50 words are retained, dropping the 51st onwards. My rationale is that the purpose of any message is usually at the start rather than the end. 
+
+After sifting through documentation detailing what the tokenizer was doing and how it interacted with pad_sequences I found a nice and basic article on [kdnuggets](https://www.kdnuggets.com/2020/03/tensorflow-keras-tokenization-text-data-prep.html) which explains the motions with simple examples. I wish I found this at the start. The messages are now ready to be embedded.
 
 ## Embed
 
@@ -104,5 +110,7 @@ That's the high level overview of the process. I'll now try to break down each o
 # Closing thoughts
 
 I'm a little concerned about how the GloVe embedding will handle 'text speak' where characters were once limited. It might be that this model actually performs better on email spam than text spam. Maybe it's not true that all spam is equal.
+
+If the BiLSTM model pays heeds to preceding and succeeding context, then might it be important to retain some of the punctuation through tokenization? Punctuation is instrumental in providing context and so might be beneficial with this BiLSTM RNN model. I'll be sure to test this if I'm ever working on something like this in a production scenario.
 
 Back on my spam problem, the first step was to use the `Tokenizer` class and `pad_sequences` module from TensorFlow and Keras. The Tokenizer class has allowed each message to be vectorised by turning it into a sequence of integers where each integer is the index of a token in a dictionary. The default behaviour of Tokenizer is to filter all punctuation besides the ' character and convert all text to lower-case.
