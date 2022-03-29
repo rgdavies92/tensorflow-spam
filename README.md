@@ -80,7 +80,7 @@ The histogram in figure 2 above shows that the median word count for a spam mess
 <p align="center" width="100%">
 <kbd><img src="images/stats.png" width="200"  /></kbd>
 </p>
-<p align="center"><i><sub><b>Figure 3:</b> Descriptive metrics by spam/ham classification.</sub></i></p>
+<p align="center"><i><sub><b>Figure 3:</b> Table of descriptive metrics by spam/ham classification.</sub></i></p>
 <br>
 
 The values in figure 3 align with what is observed in figure 2. Finally let's have a look at some word clouds for the different categories.
@@ -92,7 +92,7 @@ The values in figure 3 align with what is observed in figure 2. Finally let's ha
 <p align="center"><i><sub><b>Figure 4:</b> Word clouds for spam messages and ham messages. The largest words are the most frequntly present.</sub></i></p>
 <br>
 
-I used the `TfidfVectorizer` class from Scikit-learn to generate these word clouds. This method won't be used later in the modelling, it was just a bit of fun to investigate what sort of words are being used in the spam/ham. There's a sense of urgency in the spam cloud, with more capital letters and more prizes to be won. 
+I used the `TfidfVectorizer` class from Scikit-learn to generate these word clouds. This method won't be used later in the modelling, it was just a bit of fun to investigate what sort of words are being used in the spam/ham. There's a sense of urgency in the spam cloud, with more capital letters and more prizes to be won. If I was being paid I'd look into the 'lt' and 'gt' words in the ham word cloud as I have a hunch that these might be associated with text formatting or emojis. 
 
 That concludes this brief interrogation of a very simple dataset. Although I have used word count to describe differences between the spam and the ham, this attribute will not be included in the spam prediction model. Instead I will look to use some NLP methods to generate predictors. 
 
@@ -201,6 +201,21 @@ The only other point I'd like to add to this model definition is why I was compe
 <p align="center"><i><sub><b>Figure 5:</b> Diagrams of the bi-directional implementation of LSTM units and single LSTM unit architecture. Within the LSTM unit, the pink circles are arithmetic operators and the coloured rectangles are the gates in LSTM. Sigma denotes the sigmoid function and tanh denotes the hyperbolic tangent function. Images from Cui, Z., Ke, R., Pu, Z. and Wang, Y., 2018. Deep bidirectional and unidirectional LSTM recurrent neural network for network-wide traffic speed prediction. arXiv preprint arXiv:1801.02143. https://arxiv.org/pdf/1801.02143.pdf</sub></i></p>
 <br>
 
+# Stopping the Model
+
+The neural netowrk was trained in batches of 64 samples of 20 epochs. I won't cover what those words mean here, although there's a simple description to be found [here](https://machinelearningmastery.com/difference-between-a-batch-and-an-epoch/).
+
+In training the model I was exposed to TensorBoard for the first time. At the end of each epoch the metrics identified in the `model.compile` call are computed and can be plotted at real-time in TensorBoard before all epochs have finished training. This could be very useful if the model run was long and the user required some feedback. For me the model took less than three minutes so after working out how TensorBoard could be useful I returned to plotting the equivalent metrics with the model history and matplotlib.
+
+<br>
+<p align="center" width="100%">
+<kbd><img src="images/progression.png" width="550"  /></kbd>
+</p>
+<p align="center"><i><sub><b>Figure 6:</b> Plots of a subeset of model performance metrics by epoch on the train and test data.</sub></i></p>
+<br>
+
+It can be seen that the binomial cross-entropy (log-loss function) of the test dataset begins to rise after epoch 6 and never falls again below this value. Using model checkpoints within the callbacks parameter for the model I was able to save only the best model in terms of binomial cross-entropy. Code for the callbacks parameter actually included `tensorboard`, `model_checkpoints` and `early_stop` and can be found in the [accompanying jupyter notebook](https://github.com/rgdavies92/tensorflow-spam/blob/main/spam_detection.ipynb).
+
 # Results
 
 I'm going to try to present the model performance in many images and few words.
@@ -209,16 +224,16 @@ I'm going to try to present the model performance in many images and few words.
 <p align="center" width="100%">
 <kbd><img src="images/confusion50.png" width="350"  /></kbd>&nbsp; &nbsp; &nbsp; &nbsp;<kbd><img src="images/report50.png" width="350"  /></kbd>
 </p>
-<p align="center"><i><sub><b>Figure 6:</b> Model performance is summarised by the confusion matrix and classification report from Scikit-learn. Classification stats are with a threshold of 0.5.</sub></i></p>
+<p align="center"><i><sub><b>Figure 7:</b> Model performance is summarised by the confusion matrix and classification report from Scikit-learn. Classification stats are with a threshold of 0.5.</sub></i></p>
 <br>
 
-The model is performing well, with a 98.6% accuracy score.
+The model is performing well, with a 99% accuracy score. This is better than the baseline of 88% so I'm pleased. Within the test dataset, three emails are wrongly identified as spam and 12 emails are wrongly identified as ham. That's 15 errors in 1290 messages.
 
 <br>
 <p align="center" width="100%">
 <kbd><img src="images/prob_dist.png" width="700"  />
 </p>
-<p align="center"><i><sub><b>Figure 7:</b> Distribution of predicted spam probabilities from the model. These two plots display the same data with a different y-axis scale.</sub></i></p>
+<p align="center"><i><sub><b>Figure 8:</b> Distribution of predicted spam probabilities from the model. These two plots display the same data with a different y-axis scale.</sub></i></p>
 <br>
 
 Histograms of predicted spam probabilities show that there are only a handful of messages which the model is uncertain about. We can look to adjust the spam/ham classification threshold to optimise model performance.
@@ -227,19 +242,12 @@ Histograms of predicted spam probabilities show that there are only a handful of
 <p align="center" width="100%">
 <kbd><img src="images/threshold.png" width="700"  />
 </p>
-<p align="center"><i><sub><b>Figure 8:</b> These plots describe the trade-off available between different classification model scoring metrics when varying the spam/ham threshold. The left plot shows that raising the threshold to 0.77 would yield the maximum accuracy and f1-score.</sub></i></p>
+<p align="center"><i><sub><b>Figure 9:</b> These plots describe the trade-off available between different classification model scoring metrics when varying the spam/ham threshold. The left plot shows that the 0.5 threshold yields the maximum accuracy and f1-score.</sub></i></p>
 <br>
 
-With only a small number of messages in the uncertain land between spam and ham, these trade-off plots look very jumpy. I have had to stretch the y-axis on each of these to obtain some sort of informative plot. It can be seen that a threshold of 0.77 would yield the maximum accuracy and f1-score, although a threshold of 0.1 would yield a maximum recall score near 97%. The optimum threshold should probably be driven by what would be deemed acceptable performance from a business perspective which I don't have in this case. I'll proceed with maximising accuracy and f1-score.
+With only a small number of messages in the uncertain land between spam and ham, these trade-off plots look very jumpy. I have had to stretch the y-axis on each of these to obtain some sort of informative plot. It can be seen that a threshold of 0.5 actually yields the maximum accuracy and f1-score, although a threshold of 0.01 would yield a maximum recall score near 95%. The optimum threshold should probably be driven by what would be deemed acceptable performance from a business perspective which I don't have in this case. I'll proceed with maximising accuracy and f1-score.
 
-<br>
-<p align="center" width="100%">
-<kbd><img src="images/confusion77.png" width="350"  /></kbd>&nbsp; &nbsp; &nbsp; &nbsp;<kbd><img src="images/report77.png" width="350"  /></kbd>
-</p>
-<p align="center"><i><sub><b>Figure 9:</b> Model performance is summarised by the confusion matrix and classification report from Scikit-learn. Clasification stats are with a threshold of 0.77. Notice how this is an incremental improvemt on statistics from Figure 6. </sub></i></p>
-<br>
-
-Great stuff. The final model accuracy has increased to 98.9% with an f1-score of 95.8%, a precision score of 95.3% and a recall score of 96.3%. With this, the primary [objectives](#objectives) have been met.
+Great stuff. The final model accuracy has increased to 98.8% with an f1-score of 94.7%, a precision score of 98.8% and a recall score of 91.7%. With this, the primary [objectives](#objectives) have been met.
 
 # Closing Thoughts
 
@@ -255,8 +263,8 @@ Great stuff. The final model accuracy has increased to 98.9% with an f1-score of
     * Making word clouds into custom shapes was new      
     * NLP within TensorFlow was new 
     * Word embedding was new
-    * Although I had used ANNs before, RNNs, LSTMs and BiLSTMs were all new concepts and everything that comes with
-
+    * Although I had used ANNs before, RNNs, LSTMs and BiLSTMs were all new concepts
+    * TensorBoard was new
 
 # Contact
 
