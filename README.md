@@ -261,6 +261,8 @@ Great stuff. The final model accuracy has increased to 98.8% with an f1-score of
 
 * If the BiLSTM model pays heeds to preceding and succeeding context, then might it be important to retain some of the punctuation through tokenization? Punctuation is instrumental in providing context and so might be beneficial with this BiLSTM RNN model. I'll be sure to test this if I'm ever working on something like this in a production scenario.
 
+* I've seen this problem tackled with XGBoost or even NaiveBayes, so I'm aware that this is just one way to meet the problem. I'd like to experiment with other methods to compare at some point. 
+
 * I've learned a lot on the way:
     * Making word clouds into custom shapes was new      
     * NLP within TensorFlow was new 
