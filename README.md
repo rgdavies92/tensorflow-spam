@@ -70,7 +70,7 @@ The values in figure 3 align with what is observed in figure 2. Finally let's ha
 
 <br>
 <p align="center" width="100%">
-<kbd><img src="images/cloud.png" width="900"  /></kbd>
+<kbd><img src="images/cloud2.png" width="900"  /></kbd>
 </p>
 <p align="center"><i><sub><b>Figure 4:</b> Word clouds for spam messages and ham messages. The largest words are the most frequntly present.</sub></i></p>
 <br>
@@ -91,17 +91,17 @@ The workflow to be implemented in this spam project consists of the following:
 
 That's the high level overview of the process. I'll now try to break down each of those steps a little further, including my favourite references.
 
-## Tokenize
+### Tokenize
 
 The Tokenizer class from TensorFlow has allowed each message to be vectorised by turning it into a sequence of integers where each integer is the index of a token in a dictionary. The length of each tokenized message was equal to the number of words in the message. The default behaviour of Tokenizer is to split on white space and filter all punctuation, tabs and line breaks besides the ' character `(!"#$%&()*+,-./:;<=>?@[\\]^_{|}~\t\n)`, so I didn't have to manually standardise punctuation. Tokenizer also converts all words to lower-case as default, saving me a step in preprocessing. 
 
-## Pad
+### Pad
 
 Messages vary in length and so the tokenized outputs also very in length. This must be standardised before word embedding and can easily be done using the pad_sequences module again from TensorFlow. I have opted to cut all messages to 50 words/tokens in length based on the word count histogram in figure 2 above. Where messages are longer than 50 words, the first 50 words are retained, dropping the 51st onwards. My rationale is that the purpose of any message is usually at the start rather than the end. 
 
 After sifting through documentation detailing what the tokenizer was doing and how it interacted with pad_sequences I found a nice and basic article on [kdnuggets](https://www.kdnuggets.com/2020/03/tensorflow-keras-tokenization-text-data-prep.html) which explains the motions with simple examples. I wish I found this at the start. The messages are now ready to be embedded.
 
-## Prepare Word Embedding
+### Prepare Word Embedding
 
 Word embedding is a method by which we can represent words as dense vectors. The traditional bag-of-words models consisting of large sparse vectors can quickly grow to unmanagable dimensions, with very high feature redundancy. There are a number of methods by which we can reduce the dimensionality of these NLP problems and I'm going to use word embedding here.
 
@@ -113,11 +113,11 @@ In this project I have opted to map each word to a 100 term vector. The selling 
 
 I note that at this stage I have only prepared the word embedding. It is actually implemented as the first stage of the model
 
-## Train-Test Split
+### Train-Test Split
 
 The messages are split to a train size of 75% and a test size of 25% for model evaluation. 
 
-## Model
+### Model
 
 A BiLSTM RNN model was defined using the Sequential class from TensorFlow. Layers are stacked into the model in the order Embedding; 128 BiLSTM units; 0.3 Dropout; Dense Output with sigmoid activation function. It might be heavy reading, but a high level of detail has been included with comments in the  model definition code block below.
 
@@ -173,9 +173,9 @@ Now some of the links that I found usefull in defining this:
 * [The rmsprop optimiser](https://medium.com/analytics-vidhya/a-complete-guide-to-adam-and-rmsprop-optimizer-75f4502d83be)
 
 The only other point I'd like to add to this model definition is why I was compelled to choose a BiLSTM RNN in the first place. There are a few reasons: 
-* A RNN has a recurrent connection on the hidden state which allows sequential information to be captured in the input data - this makes it particularly useful for text problems where the sequence is paramount. 
-* With training the model through back-propagation RNNs suffer from what is known as the vanishing gradient problem. This means that the RNN would struggle to learn long-range dependencies from the early layers and is often described as a short-term memory problem. To combat this I tried using specialised units in the hidden layers - Long Short-Term Memory units or LSTMs. These LSTMs are able to learn long-range dependencies through a series of gated tensor operations which dictate what information to add or remove from the hidden state at each unit.
-* Finally, I moved from LSMTs to BiLSTMs because in a the spam problem within which I'm working, the preceding text is as important as the succeeding text. Word context is a bi-directional feature. Interestingly I don't think this delivered much model uplift, but the theory is strong so I've retained the BiLSTM units.  
+* A RNN has a recurrent connection on the hidden state which allows sequential information to be captured in the input data. This makes it particularly useful for text problems where the sequence is paramount. 
+* With training the model through back-propagation RNNs suffer from what is known as the vanishing gradient problem. This means that the RNN would struggle to learn long-range dependencies from the early layers and is often described as a short-term memory problem. To combat this I tried using specialised units in the hidden layers: Long Short-Term Memory units or LSTMs. These LSTMs are able to learn long-range dependencies through a series of gated tensor operations which dictate what information to add or remove from the hidden state at each unit.
+* Finally, I moved from LSMTs to BiLSTMs because in the spam problem within which I'm working the preceding text is as important as the succeeding text. Word context is a bi-directional feature. Interestingly I don't think this delivered much model uplift, but the theory is strong so I've retained the BiLSTM units.  
 
 <br>
 <p align="center" width="100%">
@@ -183,6 +183,7 @@ The only other point I'd like to add to this model definition is why I was compe
 </p>
 <p align="center"><i><sub><b>Figure 5:</b> Diagrams of the bi-directional implementation of LSTM units and single LSTM unit architecture. Within the LSTM unit, the pink cicrcles are arithmetic operators and the coloured rectangles are the gates in LSTM. Sigma denotes the sigmoid function and tanh denotes the hyperbolic tangent function. Images from Cui, Z., Ke, R., Pu, Z. and Wang, Y., 2018. Deep bidirectional and unidirectional LSTM recurrent neural network for network-wide traffic speed prediction. arXiv preprint arXiv:1801.02143. https://arxiv.org/pdf/1801.02143.pdf</sub></i></p>
 <br>
+
 # Results
 
 # Closing thoughts
