@@ -247,7 +247,7 @@ Histograms of predicted spam probabilities show that there are only a handful of
 <p align="center"><i><sub><b>Figure 9:</b> These plots describe the trade-off available between different classification model scoring metrics when varying the spam/ham threshold. The left plot shows that the 0.5 threshold yields the maximum accuracy and f1-score.</sub></i></p>
 <br>
 
-With only a small number of messages in the uncertain land between spam and ham, these trade-off plots look very jumpy. I have had to stretch the y-axis on each of these to obtain some sort of informative plot. It can be seen that a threshold of 0.5 actually yields the maximum accuracy and f1-score, although a threshold of 0.01 would yield a maximum recall score near 95%. The optimum threshold should probably be driven by what would be deemed acceptable performance from a business perspective which I don't have in this case. I'll proceed with maximising accuracy and f1-score.
+With only a small number of messages in the uncertain land between spam and ham, these trade-off plots look very jumpy. I have had to stretch the y-axis on each of these to obtain some sort of informative plot. It can be seen that a threshold of 0.5 actually yields the maximum accuracy and f1-score, although a threshold of 0.01 would yield a maximum recall score near 94%. The optimum threshold should probably be driven by what would be deemed acceptable performance from a business perspective which I don't have in this case. I'll proceed with maximising accuracy and f1-score.
 
 Great stuff. The final model accuracy has increased to 98.8% with an f1-score of 94.7%, a precision score of 98.8% and a recall score of 91.7%. With this, the primary [objectives](#objectives) have been met.
 
