@@ -10,6 +10,8 @@
 
 This short project was completed over the course of a week in my spare time with the intetion of building further familiarity with some NLP methods and the Keras/TensorFlow library. It was entirely self directed and as such will be documented more informally that before. To keep things simple I have lifted a pre-made dataset from [kaggle.com](https://www.kaggle.com/datasets/team-ai/spam-text-message-classification).
 
+The coding can all be found in [this jupyter notebook](https://github.com/rgdavies92/tensorflow-spam/blob/main/spam_detection.ipynb), with details of the environment [here](https://github.com/rgdavies92/tensorflow-spam/blob/main/requirements.txt).
+
 # Table of Contents
 
 - [Spam Statistics](#spam-statistics)<br> 
